@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stone Sculpture Portfolio</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <h1>Stone Sculpture Portfolio</h1>
+  <nav>
+    <a href="#" onclick="showSection('portfolio')">Portfolio</a>
+    <a href="#" onclick="showSection('about')">About</a>
+  </nav>
+</header>
+
+<!-- Main sections -->
+<main>
+  <!-- Portfolio Grid -->
+  <section id="portfolio" class="active">
+    <div class="grid" id="iframeGrid"></div>
+  </section>
+
+  <!-- About Page -->
+  <section id="about">
+    <div class="about-container">
+      <h2>About This Portfolio</h2>
+      <p>
+        This is a portfolio of <strong>soapstone sculptures</strong>, captured and presented in interactive 3D.
+      </p>
+    </div>
+  </section>
+</main>
+
+<!-- Popup Viewer -->
+<div class="iframe-overlay" id="iframeOverlay">
+<div class="iframe-wrapper">
+  <div class="button-group">
+    <button class="close-button" onclick="closeIframe()">✕ Close</button>
+    <button class="refresh-button" onclick="refreshIframe()">⟳ Refresh</button>
+  </div>
+  <iframe id="viewerIframe" src="" frameborder="0"></iframe>
+</div>
+</div>
+
+<script>
+async function loadYAML() {
+  const response = await fetch('data.yaml');
+  const text = await response.text();
+  const data = jsyaml.load(text);
+  renderGrid(data.iframes);
+}
+
+function renderGrid(iframes) {
+  const grid = document.getElementById('iframeGrid');
+  grid.innerHTML = '';
+  iframes.forEach((item, index) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <img src="${item.thumbnail}" alt="${item.title}" class="thumbnail" onclick="showIframe('${item.url}')">
+      <p>${item.title}</p>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function showIframe(url) {
+  document.getElementById('viewerIframe').src = url;
+  document.getElementById('iframeOverlay').style.display = 'flex';
+  document.body.classList.add('no-scroll');
+}
+
+function closeIframe() {
+  document.getElementById('iframeOverlay').style.display = 'none';
+  document.getElementById('viewerIframe').src = '';
+  document.body.classList.remove('no-scroll');
+}
+
+function refreshIframe() {
+  const iframe = document.getElementById('viewerIframe');
+  iframe.src = iframe.src;
+}
+
+// ✅ Close when clicking outside iframe
+document.addEventListener("DOMContentLoaded", () => {
+  const overlay = document.getElementById('iframeOverlay');
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      closeIframe();
+    }
+  });
+});
+
+// ✅ Navigation between sections
+function showSection(sectionId) {
+  document.querySelectorAll('main section').forEach(sec => sec.classList.remove('active'));
+  document.getElementById(sectionId).classList.add('active');
+}
+
+loadYAML();
+</script>
+
+</body>
+</html>
